@@ -1,0 +1,231 @@
+// ==========================================
+// PRO-V SISTEMA LOGÍSTICO - JAVASCRIPT COMPLETO
+// ==========================================
+
+// Variável global para armazenar o módulo selecionado na tela de Upload (Padrão: SEPARAÇÃO)
+let moduloSelecionado = 'SEPARAÇÃO';
+
+// --- 1. GERENCIAMENTO DE UPLOAD E SELEÇÃO DE MÓDULOS ---
+
+// Função que define a operação ativa e aplica o destaque amarelo no botão clicado
+function selecionarModulo(nomeModulo, ref) {
+    moduloSelecionado = nomeModulo;
+
+    // Reseta o estilo visual de TODOS os botões de módulo para o estado normal (transparente com borda amarela)
+    const todosBotoes = document.querySelectorAll('.upload-grid-btns .btn-modulo, .btn-modulo');
+    todosBotoes.forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.backgroundColor = 'transparent';
+        btn.style.color = '#ffffff';
+        btn.style.borderColor = '#ffc800';
+    });
+
+    // Identifica se a referência recebida é o elemento HTML (this) ou o evento (event)
+    let el = null;
+    if (ref instanceof HTMLElement) {
+        el = ref;
+    } else if (ref && ref.currentTarget) {
+        el = ref.currentTarget;
+    } else if (ref && ref.target) {
+        el = ref.target;
+    }
+
+    // Se o elemento foi identificado, força o estilo amarelo preenchido instantaneamente
+    if (el) {
+        el.classList.add('active');
+        el.style.backgroundColor = '#ffc800';
+        el.style.color = '#000000';
+        el.style.borderColor = '#ffc800';
+    }
+}
+
+// Trata o evento de arrastar e soltar (Drag & Drop)
+function manipularDropArquivo(e) {
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+        processarArquivoUpload(e.dataTransfer.files[0]);
+    }
+}
+
+// Leitura da planilha Excel e salvamento no localStorage conforme o módulo ativo
+function processarArquivoUpload(file) {
+    if (!file) return;
+
+    const msgBox = document.getElementById('txtUploadMensagem');
+    if (msgBox) msgBox.innerText = `LENDO ARQUIVO PARA ${moduloSelecionado}...`;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            // Identifica a aba "EXPORT" da planilha ou utiliza a primeira aba disponível
+            const sheetName = workbook.SheetNames.includes('EXPORT') ? 'EXPORT' : workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+
+            // Converte a planilha Excel para formato de objetos JSON
+            const rawData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+            if (moduloSelecionado === 'SEPARAÇÃO') {
+                // Mapeia as colunas da planilha conforme a estrutura necessária para Separação
+                const listaSeparacao = rawData.map((linha, index) => ({
+                    id: index + 1,
+                    cliente: linha['Nome do Cliente'] || linha['CLIENTE'] || '',
+                    material: linha['Material'] || linha['MATERIAL'] || '',
+                    descricao: linha['Descrição'] || linha['DESCRIÇÃO'] || '',
+                    notaFiscal: linha['Nota Fiscal'] || linha['NOTA FISCAL'] || '',
+                    fornecedor: linha['Fornecedor'] || linha['FORNECEDOR'] || linha['Fornecimento'] || '',
+                    numeroSerie: linha['Nº de série'] || linha['SERIE'] || '',
+                    status: 'PENDENTE'
+                })).filter(item => item.material !== '');
+
+                // Salva a lista tratada no localStorage
+                localStorage.setItem('dadosSeparacao', JSON.stringify(listaSeparacao));
+
+                if (msgBox) {
+                    msgBox.innerHTML = `<span style="color: #00ff7f; font-weight: bold;">
+                        SUCESSO! ${listaSeparacao.length} ITENS IMPORTADOS PARA SEPARAÇÃO.
+                    </span>`;
+                }
+
+                // Dispara evento para que a Fila de Trabalho atualize a visualização
+                document.dispatchEvent(new CustomEvent('dadosSeparacaoAtualizados'));
+
+            } else {
+                // Para ESTOQUE, CONFERÊNCIA ou EXPEDIÇÃO, salva os dados brutos sob a chave correspondente
+                localStorage.setItem(`dados_${moduloSelecionado}`, JSON.stringify(rawData));
+                if (msgBox) {
+                    msgBox.innerHTML = `<span style="color: #00ff7f; font-weight: bold;">
+                        ARQUIVO DE ${moduloSelecionado} IMPORTADO COM SUCESSO!
+                    </span>`;
+                }
+            }
+
+        } catch (err) {
+            console.error(err);
+            if (msgBox) {
+                msgBox.innerHTML = `<span style="color: #ff4d4d; font-weight: bold;">ERRO AO LER A PLANILHA EXCEL!</span>`;
+            }
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+
+// --- 2. OPERAÇÃO DE SEPARAÇÃO / COLETOR ---
+
+// Função para iniciar a separação no modo Coletor (RedPrairie)
+function iniciarSeparacaoTrabalhoDireto() {
+    const resumo = document.getElementById('tdPassoResumo');
+    const execucao = document.getElementById('tdPassoExecucao');
+    const inputEnd = document.getElementById('inputEnderecoSep') || document.getElementById('tdInputEndereco');
+
+    if (resumo) resumo.classList.add('hidden');
+    if (execucao) execucao.classList.remove('hidden');
+    
+    if (inputEnd) {
+        inputEnd.disabled = false;
+        inputEnd.focus();
+    }
+}
+
+
+// --- 3. ESCUTADOR GLOBAL DE TECLAS (ENTER NO LOGIN E COLETOR) ---
+
+document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return; // Só executa se for a tecla ENTER
+
+    const activeElement = document.activeElement; // Elemento focado no momento
+
+    // --- A. TELA DE LOGIN ---
+    if (activeElement && activeElement.id === 'txtUsuario') {
+        e.preventDefault();
+        const txtSenha = document.getElementById('txtSenha');
+        if (txtSenha) {
+            txtSenha.focus();
+            txtSenha.select(); // Destaca o texto se houver algo
+        }
+    } 
+    else if (activeElement && activeElement.id === 'txtSenha') {
+        e.preventDefault();
+        const btnLogar = document.getElementById('btnLogar');
+        if (btnLogar) {
+            btnLogar.click(); // Clica no botão Entrar
+        }
+    }
+
+    // --- B. COLETOR (TRABALHO DIRETO) ---
+    const inputEnd = document.getElementById('inputEnderecoSep') || document.getElementById('tdInputEndereco');
+    const inputEAN = document.getElementById('inputEanSep') || document.getElementById('tdInputEAN');
+    const inputQtd = document.getElementById('inputPedidoSep') || document.getElementById('tdInputQtd');
+
+    if (activeElement === inputEnd) {
+        e.preventDefault();
+        if (inputEnd.value.trim() !== '') {
+            inputEnd.style.backgroundColor = '#1e3d2f';
+            inputEnd.disabled = true;
+            if (inputEAN) {
+                inputEAN.disabled = false;
+                inputEAN.focus();
+            }
+        }
+    } 
+    else if (activeElement === inputEAN) {
+        e.preventDefault();
+        if (inputEAN.value.trim() !== '') {
+            inputEAN.style.backgroundColor = '#1e3d2f';
+            inputEAN.disabled = true;
+            if (inputQtd) {
+                inputQtd.disabled = false;
+                inputQtd.focus();
+            }
+        }
+    } 
+    else if (activeElement === inputQtd) {
+        e.preventDefault();
+        if (inputQtd.value.trim() !== '') {
+            alert('Item separado com sucesso!');
+
+            if (inputEnd) {
+                inputEnd.disabled = false;
+                inputEnd.value = '';
+                inputEnd.style.backgroundColor = '#000';
+                inputEnd.focus();
+            }
+
+            if (inputEAN) {
+                inputEAN.disabled = true;
+                inputEAN.value = '';
+                inputEAN.style.backgroundColor = '#000';
+            }
+
+            if (inputQtd) {
+                inputQtd.disabled = true;
+                inputQtd.value = '';
+                inputQtd.style.backgroundColor = '#000';
+            }
+        }
+    }
+});
+
+
+// --- 4. INICIALIZAÇÃO DA PÁGINA ---
+
+window.addEventListener('load', () => {
+    // Foca automaticamente no campo de usuário ao abrir a página
+    const txtUsuario = document.getElementById('txtUsuario');
+    if (txtUsuario) {
+        txtUsuario.focus();
+    }
+
+    // Garante que o botão de SEPARAÇÃO inicie amarelado no carregamento
+    const btnSeparacao = document.querySelector('.upload-grid-btns .btn-modulo.active');
+    if (btnSeparacao) {
+        btnSeparacao.style.backgroundColor = '#ffc800';
+        btnSeparacao.style.color = '#000000';
+        btnSeparacao.style.borderColor = '#ffc800';
+    }
+});

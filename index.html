@@ -1,0 +1,2343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO-V - Sistema Logístico</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            background-color: #0f1015;
+            overflow: hidden;
+        }
+
+        /* 1. Barra Lateral */
+        .sidebar {
+            width: 20%;
+            height: 100vh;
+            background: linear-gradient(180deg, #ffc800 0%, #e6b200 100%);
+            border-top-right-radius: 30px;
+            border-bottom-right-radius: 30px;
+            border-right: 2px solid #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 20px 0 0 25px;
+            z-index: 10;
+        }
+
+        /* 2. Área Principal */
+        .main-content {
+            width: 80%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Topbar / Cabeçalho Superior */
+        .topbar {
+            width: 100%;
+            height: 60px;
+            padding: 0 30px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 5;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #1a1c23;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #333338;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #ffc800;
+            color: #000000;
+            font-weight: 900;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .user-role {
+            color: #a0a0a0;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .btn-logout {
+            background-color: transparent;
+            color: #ff5555;
+            border: 1px solid #ff5555;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-logout:hover {
+            background-color: #ff5555;
+            color: #ffffff;
+        }
+
+        /* Container de Conteúdo das Telas */
+        .screen-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Logotipo Genérico */
+        .logo-h1 {
+            font-size: 76px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .logo-pro { color: #ffc800; }
+        .logo-hifen {
+            background: linear-gradient(90deg, #ffc800 0%, #6d0e9d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .logo-v { color: #6d0e9d; }
+
+        .sidebar-logo {
+            font-size: 32px;
+            margin-bottom: 30px;
+            cursor: pointer;
+        }
+        .sidebar-logo .logo-pro { color: #000000; }
+
+        /* Links do Menu Lateral */
+        .nav-menu {
+            list-style: none;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-menu li a {
+            color: #000000;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            display: block;
+            transition: transform 0.2s;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .nav-menu li a:hover {
+            transform: translateX(5px);
+        }
+
+        .submenu {
+            list-style: none;
+            padding-left: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 6px;
+            margin-bottom: 4px;
+        }
+
+        .submenu li a {
+            font-size: 11px;
+            font-weight: 700;
+            color: #222222;
+            letter-spacing: 1px;
+        }
+
+        .submenu li a:hover {
+            color: #6d0e9d;
+        }
+
+        .section-title {
+            font-size: 55px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(90deg, #ffc800 0%, #6d0e9d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        /* Container Card Estilo Canva */
+        .canva-card {
+            background-color: #d9d9d9;
+            border-radius: 12px;
+            padding: 25px 30px;
+            width: 92%;
+            max-width: 950px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid #cccccc;
+        }
+
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 25px;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group label {
+            font-weight: 800;
+            font-size: 13px;
+            color: #000000;
+            min-width: 85px;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input {
+            flex: 1;
+            height: 32px;
+            border-radius: 16px;
+            border: 1px solid #b0b0b0;
+            background-color: #ffffff;
+            padding: 0 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #000;
+            outline: none;
+        }
+
+        /* --- TELAS DE AUTENTICAÇÃO (LOGIN, RECOVERY, CADASTRO) --- */
+        .auth-box {
+            max-width: 340px;
+            width: 100%;
+        }
+
+        .logo-container-login {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo-container-login p {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-top: 8px;
+            color: #ffffff;
+        }
+
+        .auth-box label {
+            font-size: 12px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            color: #ffffff;
+            text-align: center;
+            width: 100%;
+            display: block;
+        }
+
+        .auth-box input, .auth-box select {
+            width: 100%;
+            height: 38px;
+            padding: 0 15px;
+            font-size: 12px;
+            text-align: center;
+            border: none;
+            outline: none;
+            border-radius: 19px;
+            margin-bottom: 14px;
+            background-color: #ffffff;
+            color: #333333;
+            font-weight: 700;
+        }
+
+        .auth-box input::placeholder {
+            color: #b0b0b0;
+            font-weight: 500;
+        }
+
+        .btn-auth {
+            width: 100%;
+            height: 40px;
+            background-color: #ffc800;
+            color: #000000;
+            font-size: 14px;
+            font-weight: 900;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 5px;
+            letter-spacing: 1px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-auth:hover { background-color: #e6b200; }
+
+        .auth-links {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .auth-link {
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .auth-link:hover {
+            color: #ffc800;
+        }
+
+        /* --- TELA 2: CARD BEM-VINDO --- */
+        .welcome-card {
+            background-color: #2b2b2b;
+            border: 3px solid #ffc800;
+            border-radius: 20px;
+            padding: 65px 80px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            width: 70%;
+            max-width: 680px;
+        }
+
+        .welcome-card h2 {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .welcome-card p {
+            color: #cccccc;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        /* Restante do CSS mantido intacto */
+        .table-canva-container {
+            width: 100%;
+            max-height: 280px;
+            overflow-y: auto;
+            border: 2px solid #999999;
+            background-color: #ffffff;
+            border-radius: 4px;
+        }
+
+        .table-canva {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        .table-canva th {
+            background-color: #ffffff;
+            color: #000000;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            padding: 10px 6px;
+            border-bottom: 2px solid #999999;
+            border-right: 1px solid #d1d1d1;
+            position: sticky;
+            top: 0;
+        }
+
+        .table-canva th:last-child { border-right: none; }
+
+        .table-canva td {
+            padding: 8px 6px;
+            font-size: 11px;
+            color: #333333;
+            font-weight: 600;
+            border-bottom: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .table-canva td:last-child { border-right: none; }
+        .td-gray-bg { background-color: #e8e8e8; }
+        .table-canva tr:hover { background-color: #f5f5f5; }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        .badge-pendente { background-color: #e67e22; }
+
+        .upload-container {
+            width: 80%;
+            max-width: 750px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .upload-grid-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 30px;
+        }
+
+        .btn-modulo {
+            background-color: transparent;
+            border: 2px solid #ffc800;
+            color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 25px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-modulo:hover {
+            background-color: #ffc800;
+            color: #000000;
+        }
+
+        .upload-box {
+            width: 100%;
+            max-width: 500px;
+            height: 160px;
+            border: 2px dashed #ffc800;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background-color: rgba(255, 200, 0, 0.03);
+            transition: background-color 0.2s;
+        }
+
+        .upload-box:hover { background-color: rgba(255, 200, 0, 0.08); }
+
+        .upload-icon {
+            width: 50px;
+            height: 50px;
+            fill: #ffc800;
+            margin-bottom: 8px;
+        }
+
+        .upload-box p {
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .conf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #b0b0b0;
+        }
+
+        .conf-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 45%;
+        }
+
+        .conf-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .conf-input-row label {
+            font-weight: 800;
+            font-size: 11px;
+            color: #000000;
+            min-width: 90px;
+            letter-spacing: 0.5px;
+        }
+
+        .conf-input-row input {
+            flex: 1;
+            height: 28px;
+            border-radius: 14px;
+            border: 1px solid #b0b0b0;
+            background-color: #ffffff;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .conf-header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .conf-info-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .conf-info-box span.title {
+            font-size: 10px;
+            font-weight: 800;
+            color: #000000;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .conf-info-box span.value {
+            font-size: 16px;
+            font-weight: 900;
+            color: #6d0e9d;
+        }
+
+        .btn-salvar-conf {
+            background-color: #ffc800;
+            color: #000000;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 20px;
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .btn-salvar-conf:hover { background-color: #e6b200; transform: scale(1.03); }
+
+        .exp-top-section {
+            padding-bottom: 15px;
+            border-bottom: 2px solid #b0b0b0;
+            margin-bottom: 15px;
+        }
+
+        .exp-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .exp-row label {
+            font-weight: 800;
+            font-size: 12px;
+            color: #000;
+            min-width: 85px;
+            letter-spacing: 0.5px;
+        }
+
+        .exp-row input {
+            height: 28px;
+            border-radius: 14px;
+            border: 1px solid #b0b0b0;
+            background-color: #ffffff;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .input-flex { flex: 1; }
+        .input-short { width: 120px; }
+
+        .btn-fechar-exp {
+            background-color: #ffc800;
+            color: #000;
+            border: none;
+            padding: 8px 30px;
+            border-radius: 18px;
+            font-weight: 900;
+            font-size: 12px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+
+        .btn-fechar-exp:hover { transform: scale(1.03); }
+
+        .exp-bottom-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .etiqueta-cd-box {
+            background-color: #ffffff;
+            border: 1px solid #a0a0a0;
+            border-radius: 20px;
+            padding: 12px 20px;
+            flex: 1;
+            max-width: 520px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .etiqueta-header {
+            text-align: center;
+            font-weight: 900;
+            font-size: 16px;
+            color: #000;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 4px;
+        }
+
+        .etiqueta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 15px;
+        }
+
+        .etiqueta-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .etiqueta-field.full-width { grid-column: span 2; }
+
+        .etiqueta-field label {
+            font-weight: 800;
+            font-size: 11px;
+            color: #000;
+            min-width: 55px;
+        }
+
+        .etiqueta-field input {
+            flex: 1;
+            height: 24px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            padding: 0 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .etiqueta-colaborador {
+            margin-top: 8px;
+            font-weight: 800;
+            font-size: 12px;
+            color: #000;
+        }
+
+        .exp-actions-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 150px;
+        }
+
+        .btn-exp-action {
+            height: 38px;
+            border: none;
+            border-radius: 19px;
+            font-weight: 900;
+            font-size: 12px;
+            color: #ffffff;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        .btn-exp-action:hover { transform: scale(1.03); }
+        .btn-imprimir { background-color: #00b050; }
+        .btn-reimprimir { background-color: #ff0000; }
+    </style>
+</head><style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            background-color: #0f1015;
+            overflow: hidden;
+        }
+
+        /* 1. Barra Lateral (Desktop) */
+        .sidebar {
+            width: 20%;
+            height: 100vh;
+            background: linear-gradient(180deg, #ffc800 0%, #e6b200 100%);
+            border-top-right-radius: 30px;
+            border-bottom-right-radius: 30px;
+            border-right: 2px solid #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 20px 0 0 25px;
+            z-index: 10;
+        }
+
+        /* 2. Área Principal (Desktop) */
+        .main-content {
+            width: 80%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        /* Topbar / Cabeçalho Superior */
+        .topbar {
+            width: 100%;
+            height: 60px;
+            padding: 0 30px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 5;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #1a1c23;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #333338;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #ffc800;
+            color: #000000;
+            font-weight: 900;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .user-role {
+            color: #a0a0a0;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .btn-logout {
+            background-color: transparent;
+            color: #ff5555;
+            border: 1px solid #ff5555;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-logout:hover {
+            background-color: #ff5555;
+            color: #ffffff;
+        }
+
+        /* Container de Conteúdo das Telas */
+        .screen-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding-top: 60px;
+        }
+
+        .screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Logotipo Genérico */
+        .logo-h1 {
+            font-size: 76px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .logo-pro { color: #ffc800; }
+        .logo-hifen {
+            background: linear-gradient(90deg, #ffc800 0%, #6d0e9d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .logo-v { color: #6d0e9d; }
+
+        .sidebar-logo {
+            font-size: 32px;
+            margin-bottom: 30px;
+            cursor: pointer;
+        }
+        .sidebar-logo .logo-pro { color: #000000; }
+
+        /* Links do Menu Lateral */
+        .nav-menu {
+            list-style: none;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-menu li a {
+            color: #000000;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            display: block;
+            transition: transform 0.2s;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .nav-menu li a:hover {
+            transform: translateX(5px);
+        }
+
+        .submenu {
+            list-style: none;
+            padding-left: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 6px;
+            margin-bottom: 4px;
+        }
+
+        .submenu li a {
+            font-size: 11px;
+            font-weight: 700;
+            color: #222222;
+            letter-spacing: 1px;
+        }
+
+        .submenu li a:hover {
+            color: #6d0e9d;
+        }
+
+        .section-title {
+            font-size: 55px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(90deg, #ffc800 0%, #6d0e9d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        /* Container Card Estilo Canva */
+        .canva-card {
+            background-color: #d9d9d9;
+            border-radius: 12px;
+            padding: 25px 30px;
+            width: 92%;
+            max-width: 950px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid #cccccc;
+        }
+
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 25px;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group label {
+            font-weight: 800;
+            font-size: 13px;
+            color: #000000;
+            min-width: 85px;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input {
+            flex: 1;
+            height: 32px;
+            border-radius: 16px;
+            border: 1px solid #b0b0b0;
+            background-color: #ffffff;
+            padding: 0 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #000;
+            outline: none;
+        }
+
+        /* --- TELAS DE AUTENTICAÇÃO (LOGIN, RECOVERY, CADASTRO) --- */
+        .auth-box {
+            max-width: 340px;
+            width: 100%;
+        }
+
+        .logo-container-login {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo-container-login p {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-top: 8px;
+            color: #ffffff;
+        }
+
+        .auth-box label {
+            font-size: 12px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            color: #ffffff;
+            text-align: center;
+            width: 100%;
+            display: block;
+        }
+
+        .auth-box input, .auth-box select {
+            width: 100%;
+            height: 38px;
+            padding: 0 15px;
+            font-size: 12px;
+            text-align: center;
+            border: none;
+            outline: none;
+            border-radius: 19px;
+            margin-bottom: 14px;
+            background-color: #ffffff;
+            color: #333333;
+            font-weight: 700;
+        }
+
+        .auth-box input::placeholder {
+            color: #b0b0b0;
+            font-weight: 500;
+        }
+
+        .btn-auth {
+            width: 100%;
+            height: 40px;
+            background-color: #ffc800;
+            color: #000000;
+            font-size: 14px;
+            font-weight: 900;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 5px;
+            letter-spacing: 1px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-auth:hover { background-color: #e6b200; }
+
+        .auth-links {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .auth-link {
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .auth-link:hover {
+            color: #ffc800;
+        }
+
+        /* --- TELA 2: CARD BEM-VINDO --- */
+        .welcome-card {
+            background-color: #2b2b2b;
+            border: 3px solid #ffc800;
+            border-radius: 20px;
+            padding: 65px 80px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            width: 70%;
+            max-width: 680px;
+        }
+
+        .welcome-card h2 {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .welcome-card p {
+            color: #cccccc;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .table-canva-container {
+            width: 100%;
+            max-height: 280px;
+            overflow-y: auto;
+            border: 2px solid #999999;
+            background-color: #ffffff;
+            border-radius: 4px;
+        }
+
+        .table-canva {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        .table-canva th {
+            background-color: #ffffff;
+            color: #000000;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            padding: 10px 6px;
+            border-bottom: 2px solid #999999;
+            border-right: 1px solid #d1d1d1;
+            position: sticky;
+            top: 0;
+        }
+
+        .table-canva th:last-child { border-right: none; }
+
+        .table-canva td {
+            padding: 8px 6px;
+            font-size: 11px;
+            color: #333333;
+            font-weight: 600;
+            border-bottom: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .table-canva td:last-child { border-right: none; }
+        .td-gray-bg { background-color: #e8e8e8; }
+        .table-canva tr:hover { background-color: #f5f5f5; }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        .badge-pendente { background-color: #e67e22; }
+
+        .upload-container {
+            width: 80%;
+            max-width: 750px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .upload-grid-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 30px;
+        }
+
+        .btn-modulo {
+            background-color: transparent;
+            border: 2px solid #ffc800;
+            color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 25px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-modulo:hover {
+            background-color: #ffc800;
+            color: #000000;
+        }
+
+        .upload-box {
+            width: 100%;
+            max-width: 500px;
+            height: 160px;
+            border: 2px dashed #ffc800;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background-color: rgba(255, 200, 0, 0.03);
+            transition: background-color 0.2s;
+        }
+
+        .upload-box:hover { background-color: rgba(255, 200, 0, 0.08); }
+
+        .upload-icon {
+            width: 50px;
+            height: 50px;
+            fill: #ffc800;
+            margin-bottom: 8px;
+        }
+
+        .upload-box p {
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .conf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #b0b0b0;
+        }
+
+        .conf-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 45%;
+        }
+
+        .conf-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .conf-input-row label {
+            font-weight: 800;
+            font-size: 11px;
+            color: #000000;
+            min-width: 90px;
+            letter-spacing: 0.5px;
+        }
+
+        .conf-input-row input {
+            flex: 1;
+            height: 28px;
+            border-radius: 14px;
+            border: 1px solid #b0b0b0;
+            background-color: #ffffff;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .conf-header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .conf-info-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .conf-info-box span.title {
+            font-size: 10px;
+            font-weight: 800;
+            color: #000000;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .conf-info-box span.value {
+            font-size: 16px;
+            font-weight: 900;
+            color: #6d0e9d;
+        }
+
+        .btn-salvar-conf {
+            background-color: #ffc800;
+            color: #000000;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 20px;
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .btn-salvar-conf:hover { background-color: #e6b200; transform: scale(1.03); }
+
+        .exp-top-section {
+            padding-bottom: 15px;
+            border-bottom: 2px solid #b0b0b0;
+            margin-bottom: 15px;
+        }
+
+        .exp-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .exp-row label {
+            font-weight: 800;
+            font-size: 12px;
+            color: #000;
+            min-width: 85px;
+            letter-spacing: 0.5px;
+        }
+
+        .exp-row input {
+            height: 28px;
+            border-radius: 14px;
+            border: 1px solid #b0b0b0;
+            background-color: #ffffff;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .input-flex { flex: 1; }
+        .input-short { width: 120px; }
+
+        .btn-fechar-exp {
+            background-color: #ffc800;
+            color: #000;
+            border: none;
+            padding: 8px 30px;
+            border-radius: 18px;
+            font-weight: 900;
+            font-size: 12px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+
+        .btn-fechar-exp:hover { transform: scale(1.03); }
+
+        .exp-bottom-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .etiqueta-cd-box {
+            background-color: #ffffff;
+            border: 1px solid #a0a0a0;
+            border-radius: 20px;
+            padding: 12px 20px;
+            flex: 1;
+            max-width: 520px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .etiqueta-header {
+            text-align: center;
+            font-weight: 900;
+            font-size: 16px;
+            color: #000;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 4px;
+        }
+
+        .etiqueta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 15px;
+        }
+
+        .etiqueta-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .etiqueta-field.full-width { grid-column: span 2; }
+
+        .etiqueta-field label {
+            font-weight: 800;
+            font-size: 11px;
+            color: #000;
+            min-width: 55px;
+        }
+
+        .etiqueta-field input {
+            flex: 1;
+            height: 24px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            padding: 0 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .etiqueta-colaborador {
+            margin-top: 8px;
+            font-weight: 800;
+            font-size: 12px;
+            color: #000;
+        }
+
+        .exp-actions-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 150px;
+        }
+
+        .btn-exp-action {
+            height: 38px;
+            border: none;
+            border-radius: 19px;
+            font-weight: 900;
+            font-size: 12px;
+            color: #ffffff;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        .btn-exp-action:hover { transform: scale(1.03); }
+        .btn-imprimir { background-color: #00b050; }
+        .btn-reimprimir { background-color: #ff0000; }
+
+        /* ====================================================== */
+        /* --- ADAPTAÇÃO AJUSTADA PARA COLETORES ANDROID (MOBILE) --- */
+        /* ====================================================== */
+        @media (max-width: 850px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+
+            /* 1. Menu Superior Compacto */
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-radius: 0 0 15px 15px;
+                border-right: none;
+                border-bottom: 2px solid #ffffff;
+                padding: 10px;
+                align-items: center;
+            }
+
+            .sidebar-logo {
+                font-size: 22px;
+                margin-bottom: 5px;
+            }
+
+            .nav-menu {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 6px 12px;
+            }
+
+            .nav-menu li a {
+                font-size: 10px;
+                letter-spacing: 0.5px;
+            }
+
+            .submenu {
+                padding-left: 0;
+                gap: 4px;
+            }
+
+            .submenu li a {
+                font-size: 9px;
+            }
+
+            /* 2. Topbar do Usuário Compacta */
+            .topbar {
+                position: relative;
+                height: auto;
+                padding: 8px 12px;
+                justify-content: space-between;
+                background-color: #1a1c23;
+            }
+
+            .user-profile {
+                padding: 4px 10px;
+            }
+
+            .user-name { font-size: 10px; }
+            .user-role { font-size: 8px; }
+            .btn-logout { padding: 4px 10px; font-size: 10px; }
+
+            /* 3. Área Conteúdo e Títulos */
+            .main-content {
+                width: 100%;
+                height: auto;
+                overflow-y: visible;
+                padding-bottom: 20px;
+            }
+
+            .screen-container {
+                padding-top: 10px;
+                height: auto;
+            }
+
+            .logo-h1 { font-size: 42px; }
+
+            .section-title {
+                font-size: 22px;
+                margin-bottom: 12px;
+                letter-spacing: 1px;
+            }
+
+            .canva-card {
+                width: 96%;
+                padding: 12px;
+            }
+
+            /* 4. Formulários Empilhados (Rótulo em Cima do Input) */
+            .inputs-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .input-group, .conf-input-row, .exp-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .input-group label, .conf-input-row label, .exp-row label {
+                min-width: 100%;
+                font-size: 11px;
+                margin-bottom: 2px;
+            }
+
+            .input-group input, .conf-input-row input, .exp-row input {
+                width: 100% !important;
+                height: 38px !important;
+                font-size: 14px !important;
+            }
+
+            .input-short { width: 100% !important; }
+
+            /* 5. Tabelas Ajustadas com Rolagem */
+            .table-canva-container {
+                max-height: 220px;
+                overflow-x: auto;
+            }
+
+            .table-canva {
+                min-width: 450px;
+            }
+
+            .table-canva th, .table-canva td {
+                padding: 6px 4px;
+                font-size: 10px;
+            }
+
+            /* 6. Ajustes de Expedição */
+            .exp-bottom-section {
+                flex-direction: column;
+            }
+
+            .etiqueta-cd-box {
+                max-width: 100%;
+                padding: 10px;
+            }
+
+            .exp-actions-btns {
+                width: 100%;
+                flex-direction: row;
+                gap: 8px;
+            }
+
+            .btn-exp-action {
+                flex: 1;
+                height: 42px;
+                font-size: 12px;
+            }
+        }
+    </style>
+<body>
+
+    <!-- 1. Barra Lateral -->
+    <div class="sidebar">
+        <h1 id="sidebarLogo" class="logo-h1 sidebar-logo hidden">
+            <span class="logo-pro">PRO</span><span class="logo-hifen">-</span><span class="logo-v">V</span>
+        </h1>
+
+        <ul id="sidebarMenu" class="nav-menu hidden">
+            <li><a id="linkUpload">• UPLOAD</a></li>
+            <li><a id="linkEstoque">• ESTOQUE</a></li>
+            
+            <li>
+                <a id="linkSeparacao">• SEPARAÇÃO</a>
+                <ul id="submenuSeparacao" class="submenu hidden">
+                    <li><a id="subFilaTrabalho">└ FILA DE TRABALHO</a></li>
+                    <li><a id="subListaSeparacao">└ TRABALHO DIRETO</a></li>
+                </ul>
+            </li>
+
+            <li><a id="linkConferencao">• CONFERÊNCIA</a></li>
+            <li><a id="linkExpedicao">• EXPEDIÇÃO</a></li>
+        </ul>
+    </div>
+
+    <!-- 2. Área Principal -->
+    <div class="main-content">
+        
+        <!-- Topbar: Perfil & Sair -->
+        <div id="topbar" class="topbar hidden">
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-info">
+                    <span class="user-name" id="userNameDisplay">USUÁRIO</span>
+                    <span class="user-role" id="userRoleDisplay">AUXILIAR DE LOGÍSTICA</span>
+                </div>
+            </div>
+            <button type="button" class="btn-logout" id="btnLogout">
+                SAIR ✕
+            </button>
+        </div>
+
+        <!-- Container de Telas -->
+        <div class="screen-container">
+
+           <!-- TELA 1A: LOGIN -->
+<div id="screenLogin" class="screen auth-box">
+    <div class="logo-container-login">
+        <h1 class="logo-h1"><span class="logo-pro">PRO</span><span class="logo-hifen">-</span><span class="logo-v">V</span></h1>
+        <p>SISTEMA LOGÍSTICO</p>
+    </div>
+
+    <label for="txtUsuario">USUÁRIO</label>
+    <input type="text" id="txtUsuario" placeholder="DIGITE SUA MATRÍCULA" autocomplete="off" autofocus
+           onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('txtSenha').focus(); }">
+
+    <label for="txtSenha">SENHA</label>
+    <input type="password" id="txtSenha" placeholder="********"
+           onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('btnLogar').click(); }">
+
+    <button type="button" class="btn-auth" id="btnLogar">ENTRAR</button>
+
+    <div class="auth-links">
+        <span class="auth-link" id="linkGoRecovery">ESQUECI MINHA SENHA</span>
+        <span class="auth-link" id="linkGoRegister" style="color: #ffc800;">CRIAR NOVA CONTA</span>
+    </div>
+</div>
+
+<!-- TELA 1B: RECUPERAR SENHA -->
+<div id="screenRecovery" class="screen auth-box hidden">
+    <div class="logo-container-login">
+        <h1 class="logo-h1"><span class="logo-pro">PRO</span><span class="logo-hifen">-</span><span class="logo-v">V</span></h1>
+        <p>RECUPERAÇÃO DE ACESSO</p>
+    </div>
+
+    <label for="txtRecMatricula">MATRÍCULA</label>
+    <input type="text" id="txtRecMatricula" placeholder="INFORME SUA MATRÍCULA"
+           onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('txtNovaSenha').focus(); }">
+
+    <label for="txtNovaSenha">NOVA SENHA</label>
+    <input type="password" id="txtNovaSenha" placeholder="DIGITE A NOVA SENHA"
+           onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('btnRedefinirSenha').click(); }">
+
+    <button type="button" class="btn-auth" id="btnRedefinirSenha">REDEFINIR SENHA</button>
+
+    <div class="auth-links">
+        <span class="auth-link" id="linkBackLoginRec">VOLTAR PARA O LOGIN</span>
+    </div>
+</div>
+
+<!-- TELA 1C: CADASTRO DE NOVO USUÁRIO -->
+<div id="screenRegister" class="screen auth-box hidden">
+    <div class="logo-container-login">
+        <h1 class="logo-h1"><span class="logo-pro">PRO</span><span class="logo-hifen">-</span><span class="logo-v">V</span></h1>
+        <p>NOVO CADASTRO</p>
+    </div>
+
+    <label for="txtRegMatricula">MATRÍCULA</label>
+    <input type="text" id="txtRegMatricula" placeholder="EX: 123456"
+           onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('txtRegNome').focus(); }">
+
+    <label for="txtRegNome">NOME COMPLETO</label>
+    <input type="text" id="txtRegNome" placeholder="EX: JONATAS SILVA"
+           onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('txtRegCargo').focus(); }">
+
+    <label for="txtRegCargo">CARGO</label>
+    <input type="text" id="txtRegCargo" placeholder="EX: AUXILIAR DE LOGÍSTICA"
+           onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('txtRegSenha').focus(); }">
+
+    <label for="txtRegSenha">SENHA</label>
+    <input type="password" id="txtRegSenha" placeholder="CRIE UMA SENHA"
+           onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('btnCadastrar').click(); }">
+
+    <button type="button" class="btn-auth" id="btnCadastrar">CADASTRAR</button>
+
+    <div class="auth-links">
+        <span class="auth-link" id="linkBackLoginReg">VOLTAR PARA O LOGIN</span>
+    </div>
+</div>
+            <!-- TELA 2: Boas-Vindas -->
+            <div id="screenMenu" class="screen hidden">
+                <div class="welcome-card">
+                    <h2>BEM VINDO AO SEU SISTEMA</h2>
+                    <p>SUA OPERAÇÃO INTEGRADA, DO ESTOQUE À EXPEDIÇÃO</p>
+                </div>
+            </div>
+
+  <!-- TELA 3: Upload -->
+<div id="screenUpload" class="screen hidden">
+    <div class="upload-container">
+        <h2 class="section-title">UPLOAD</h2>
+
+        <!-- Botões de Seleção do Módulo -->
+        <div class="upload-grid-btns">
+            <button type="button" class="btn-modulo" onclick="selecionarModulo('ESTOQUE', event)">ESTOQUE</button>
+            <button type="button" class="btn-modulo active" onclick="selecionarModulo('SEPARAÇÃO', event)">SEPARAÇÃO</button>
+            <button type="button" class="btn-modulo" onclick="selecionarModulo('CONFERÊNCIA', event)">CONFERÊNCIA</button>
+            <button type="button" class="btn-modulo" onclick="selecionarModulo('EXPEDIÇÃO', event)">EXPEDIÇÃO</button>
+        </div>
+
+        <!-- Área de Upload (Dropzone) -->
+        <div class="upload-box" id="dropZone" 
+             onclick="document.getElementById('fileInput').click()" 
+             ondragover="event.preventDefault()" 
+             ondrop="manipularDropArquivo(event)">
+            
+            <svg class="upload-icon" viewBox="0 0 24 24" style="width: 48px; height: 48px; fill: #ffc800;">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+            </svg>
+            
+            <p id="txtUploadMensagem" style="margin-top: 12px; font-weight: bold; color: #ffffff;">
+                SELECIONE OU ARRASTE O ARQUIVO AQUI
+            </p>
+            
+            <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="processarArquivoUpload(this.files[0])">
+        </div>
+    </div>
+</div>
+
+            <!-- TELA 4: Estoque -->
+            <div id="screenEstoque" class="screen hidden">
+                <h2 class="section-title">ESTOQUE</h2>
+                <div class="canva-card">
+                    <div class="inputs-grid">
+                        <div class="input-group">
+                            <label for="inputProdutoEstoque">PRODUTO</label>
+                            <input type="text" id="inputProdutoEstoque">
+                        </div>
+                        <div class="input-group">
+                            <label for="inputSerialEstoque">SERIAL</label>
+                            <input type="text" id="inputSerialEstoque">
+                        </div>
+                        <div class="input-group">
+                            <label for="inputEanEstoque">EAN</label>
+                            <input type="text" id="inputEanEstoque">
+                        </div>
+                        <div class="input-group">
+                            <label for="inputEnderecoEstoque">ENDEREÇO</label>
+                            <input type="text" id="inputEnderecoEstoque">
+                        </div>
+                    </div>
+
+                    <div class="table-canva-container">
+                        <table class="table-canva">
+                            <thead>
+                                <tr>
+                                    <th>PRODUTO</th>
+                                    <th>EAN</th>
+                                    <th>SERIAL</th>
+                                    <th>ENDEREÇO</th>
+                                    <th>QUANTIDADE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>--</td>
+                                    <td>--</td>
+                                    <td>--</td>
+                                    <td>--</td>
+                                    <td>0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TELA 5A: Fila de Trabalho -->
+            <div id="screenFilaTrabalho" class="screen hidden">
+                <h2 class="section-title">FILA DE TRABALHO</h2>
+                <div class="canva-card">
+                    <div class="inputs-grid">
+                        <div class="input-group">
+                            <label for="inputFiltroPedido">PEDIDO / O.S</label>
+                            <input type="text" id="inputFiltroPedido">
+                        </div>
+                        <div class="input-group">
+                            <label for="inputFiltroOperador">OPERADOR</label>
+                            <input type="text" id="inputFiltroOperador">
+                        </div>
+                    </div>
+
+                    <div class="table-canva-container">
+                        <table class="table-canva">
+                            <thead>
+                                <tr>
+                                    <th>PEDIDO / O.S</th>
+                                    <th>OPERADOR</th>
+                                    <th>QTD ITENS</th>
+                                    <th>PROGRESSO</th>
+                                    <th>STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>--</td>
+                                    <td>--</td>
+                                    <td>0</td>
+                                    <td>0%</td>
+                                    <td><span class="badge badge-pendente">PENDENTE</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TELA 5B: TRABALHO DIRETO (FLUXO COLETOR REDPRAIRIE) -->
+<div id="screenListaSeparacao" class="screen hidden">
+    <h2 class="section-title">TRABALHO DIRETO</h2>
+
+    <div class="canva-card">
+        
+        <!-- PASSO 1: RESUMO DA LISTA (ESTILO TERMINAL SYMBOL) -->
+        <div id="tdPassoResumo" style="background-color: #0d0e12; color: #00ff66; border: 2px solid #333; border-radius: 8px; padding: 20px; font-family: 'Courier New', Courier, monospace; max-width: 450px; margin: 0 auto 20px auto;">
+            <div style="font-size: 16px; font-weight: bold; text-align: center; border-bottom: 1px dashed #00ff66; padding-bottom: 8px; margin-bottom: 15px; color: #fff;">
+                Lista de Separação
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 14px;">
+                <div>
+                    <span style="color: #aaa;">Cod Lista:</span><br>
+                    <strong style="color: #fff; font-size: 16px;" id="lblCodLista">LST000006303347</strong>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; background: #16181e; padding: 10px; border-radius: 4px;">
+                    <div>
+                        <span style="color: #aaa; font-size: 12px;">Sep Totais:</span><br>
+                        <strong style="color: #00ff66; font-size: 18px;" id="lblVisitasTotais">4</strong>
+                    </div>
+                    <div>
+                        <span style="color: #aaa; font-size: 12px;">Peças Totais:</span><br>
+                        <strong style="color: #ffc800; font-size: 18px;" id="lblPecasTotais">154</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button type="button" id="btnIniciarLista" onclick="iniciarFluxoColetor()" class="btn-auth" style="width: 100%; height: 45px; font-size: 13px; font-weight: bold; background: #00ff66; color: #000; border: none; border-radius: 4px; cursor: pointer;">
+                    PRES ENTER P/ CONF
+                </button>
+            </div>
+        </div>
+
+        <!-- PASSO 3: EXECUÇÃO DA SEPARAÇÃO (MANTENDO OS IDS ORIGINAIS) -->
+        <div id="tdPassoExecucao" class="hidden" style="background-color: #0d0e12; color: #fff; border: 2px solid #333; border-radius: 8px; padding: 15px; font-family: 'Courier New', Courier, monospace; max-width: 450px; margin: 0 auto;">
+            
+            <!-- Painel de Informações do Item Ativo -->
+            <div style="background: #16181e; border-left: 4px solid #00ff66; padding: 10px; margin-bottom: 15px; font-size: 13px; line-height: 1.5;">
+                <div style="display: flex; justify-content: space-between; color: #ffc800; font-size: 11px; font-weight: bold; margin-bottom: 5px;">
+                    <span>SEP DO PEDIDO</span>
+                    <span id="lblProgresso">ITEM 1 / 4</span>
+                </div>
+                <div><span style="color: #aaa;">End Target:</span> <strong style="color: #00ff66; font-size: 18px;" id="lblEndAlvo">1-A-009-0</strong></div>
+                <div><span style="color: #aaa;">Qtd Solicitada:</span> <strong style="color: #ffc800; font-size: 16px;" id="lblQtdAlvo">2 UN</strong></div>
+                <div><span style="color: #aaa;">SKU:</span> <strong style="color: #fff;" id="lblSkuAlvo">5165818</strong></div>
+                <div><span style="color: #aaa;">Desc:</span> <span style="color: #ddd;" id="lblDescAlvo">TV LED 24 PHILCO PTV</span></div>
+            </div>
+
+            <!-- Formulário com os IDs Originais do seu JS -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="input-group">
+                    <label for="inputEnderecoSep" style="color: #00ff66; font-size: 12px; font-weight: bold;">1. CONF. ENDEREÇO:</label>
+                    <input type="text" id="inputEnderecoSep" placeholder="Bipe o Endereço" style="background: #000; color: #00ff66; border: 1px solid #00ff66; font-family: monospace; padding: 10px; font-size: 14px;" autofocus>
+                </div>
+
+                <div class="input-group">
+                    <label for="inputEanSep" style="color: #00ff66; font-size: 12px; font-weight: bold;">2. CONF. EAN / SKU:</label>
+                    <input type="text" id="inputEanSep" placeholder="Bipe o Código de Barras" style="background: #000; color: #00ff66; border: 1px solid #444; font-family: monospace; padding: 10px; font-size: 14px;" disabled>
+                </div>
+
+                <div class="input-group">
+                    <label for="inputPedidoSep" style="color: #00ff66; font-size: 12px; font-weight: bold;">3. CONF. QTD:</label>
+                    <input type="text" id="inputPedidoSep" placeholder="Digite/Confirme a Qtd" style="background: #000; color: #00ff66; border: 1px solid #444; font-family: monospace; padding: 10px; font-size: 14px;" disabled>
+                </div>
+
+                <!-- Input oculto para manter o serial se necessário -->
+                <input type="hidden" id="inputSerialSep">
+                <!-- PASSO 1: RESUMO DA LISTA (ZERADO AGUARDANDO UPLOAD) -->
+<div id="tdPassoResumo" style="background-color: #0d0e12; color: #00ff66; border: 2px solid #333; border-radius: 8px; padding: 20px; font-family: 'Courier New', Courier, monospace; max-width: 450px; margin: 0 auto 20px auto;">
+    <div style="font-size: 16px; font-weight: bold; text-align: center; border-bottom: 1px dashed #00ff66; padding-bottom: 8px; margin-bottom: 15px; color: #fff;">
+        Lista de Separação
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; font-size: 14px;">
+        <div>
+            <span style="color: #aaa;">Cod Lista:</span><br>
+            <strong style="color: #fff; font-size: 16px;" id="lblCodLista">--</strong>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; background: #16181e; padding: 10px; border-radius: 4px;">
+            <div>
+                <span style="color: #aaa; font-size: 12px;">Sep Totais:</span><br>
+                <strong style="color: #00ff66; font-size: 18px;" id="lblVisitasTotais">0</strong>
+            </div>
+            <div>
+                <span style="color: #aaa; font-size: 12px;">Peças Totais:</span><br>
+                <strong style="color: #ffc800; font-size: 18px;" id="lblPecasTotais">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <button type="button" id="btnIniciarLista" onclick="iniciarFluxoColetor()" class="btn-auth" style="width: 100%; height: 45px; font-size: 13px; font-weight: bold; background: #333; color: #888; border: none; border-radius: 4px; cursor: not-allowed;" disabled>
+            NENHUMA LISTA CARREGADA
+        </button>
+    </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+            <!-- TELA 6: Conferência -->
+            <div id="screenConferencao" class="screen hidden">
+                <h2 class="section-title">CONFERÊNCIA</h2>
+                <div class="canva-card">
+                    <div class="conf-header">
+                        <div class="conf-header-left">
+                            <div class="conf-input-row">
+                                <label for="inputInserirNf">INSERIR NF</label>
+                                <input type="text" id="inputInserirNf">
+                            </div>
+                            <div class="conf-input-row">
+                                <label for="inputHoraInicial">HORA INICIAL</label>
+                                <input type="text" id="inputHoraInicial" placeholder="--:--">
+                            </div>
+                            <div class="conf-input-row">
+                                <label for="inputHoraFinal">HORA FINAL</label>
+                                <input type="text" id="inputHoraFinal" placeholder="--:--">
+                            </div>
+                        </div>
+
+                        <div class="conf-header-right">
+                            <div class="conf-info-box">
+                                <span class="title">QUANTIDADE TOTAL</span>
+                                <span class="value" id="valQtdTotal">0</span>
+                            </div>
+                            <div class="conf-info-box">
+                                <span class="title">QUANTIDADE CONFERIDA</span>
+                                <span class="value" id="valQtdConferida">0</span>
+                            </div>
+                            <button type="button" class="btn-salvar-conf" id="btnSalvarConf">SALVAR</button>
+                        </div>
+                    </div>
+
+                    <div class="table-canva-container">
+                        <table class="table-canva">
+                            <thead>
+                                <tr>
+                                    <th>PRODUTO</th>
+                                    <th>DESCRIÇÃO</th>
+                                    <th>NF</th>
+                                    <th>SERIAL</th>
+                                    <th>BIPAGEM</th>
+                                    <th>CLIENTE</th>
+                                    <th>FORNECIMENTO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="td-gray-bg">--</td>
+                                    <td class="td-gray-bg">--</td>
+                                    <td class="td-gray-bg">--</td>
+                                    <td class="td-gray-bg">--</td>
+                                    <td class="td-gray-bg">--</td>
+                                    <td>--</td>
+                                    <td>--</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TELA 7: Expedição -->
+            <div id="screenExpedicao" class="screen hidden">
+                <h2 class="section-title">EXPEDIÇÃO</h2>
+                <div class="canva-card">
+                    <div class="exp-top-section">
+                        <div class="exp-row">
+                            <label for="inputNfEtiqueta">NF ETIQUETA</label>
+                            <input type="text" id="inputNfEtiqueta" class="input-flex">
+                            
+                            <label for="inputDataExp" style="min-width: 45px; margin-left: 20px;">DATA</label>
+                            <input type="text" id="inputDataExp" class="input-short" placeholder="DD/MM/AAAA">
+                        </div>
+
+                        <div class="exp-row">
+                            <label for="inputQtdExp">QTD</label>
+                            <input type="text" id="inputQtdExp" class="input-short">
+                        </div>
+
+                        <div class="exp-row">
+                            <label for="inputClienteExp">CLIENTE</label>
+                            <input type="text" id="inputClienteExp" class="input-flex">
+                        </div>
+
+                        <div class="exp-row">
+                            <label for="inputLacreExp">LACRE</label>
+                            <input type="text" id="inputLacreExp" class="input-short">
+                            <button type="button" class="btn-fechar-exp" id="btnFecharExp" style="margin-left: 20px;">FECHAR</button>
+                        </div>
+                    </div>
+
+                    <div class="exp-bottom-section">
+                        <div class="etiqueta-cd-box">
+                            <div class="etiqueta-header">CD/RJ</div>
+                            <div class="etiqueta-grid">
+                                <div class="etiqueta-field">
+                                    <label for="lblDataCd">DATA</label>
+                                    <input type="text" id="lblDataCd" readonly>
+                                </div>
+                                <div class="etiqueta-field">
+                                    <label for="lblVolCd">VOL</label>
+                                    <input type="text" id="lblVolCd" readonly>
+                                </div>
+                                <div class="etiqueta-field full-width">
+                                    <label for="lblClienteCd">CLIENTE</label>
+                                    <input type="text" id="lblClienteCd" readonly>
+                                </div>
+                                <div class="etiqueta-field">
+                                    <label for="lblLacreCd">LACRE</label>
+                                    <input type="text" id="lblLacreCd" readonly>
+                                </div>
+                                <div class="etiqueta-field">
+                                    <label for="lblCamCd">CAM</label>
+                                    <input type="text" id="lblCamCd" readonly>
+                                </div>
+                            </div>
+                            <div class="etiqueta-colaborador">
+                                COLABORADOR: <span id="valColaboradorCd">--</span>
+                            </div>
+                        </div>
+
+                        <div class="exp-actions-btns">
+                            <button type="button" class="btn-exp-action btn-imprimir" id="btnImprimir">IMPRIMIR</button>
+                            <button type="button" class="btn-exp-action btn-reimprimir" id="btnReimprimir">REIMPRIMIR</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- BASE DE DADOS LOCAL ---
+        function obterUsuarios() {
+            const users = localStorage.getItem('prov_users');
+            if (users) {
+                return JSON.parse(users);
+            } else {
+                // Usuário default de teste inicial
+                const defaultUsers = {
+                    "1234": {
+                        nome: "ADMINISTRADOR",
+                        cargo: "AUXILIAR DE LOGÍSTICA 3",
+                        senha: "1234"
+                    }
+                };
+                localStorage.setItem('prov_users', JSON.stringify(defaultUsers));
+                return defaultUsers;
+            }
+        }
+
+        function salvarUsuarios(usuarios) {
+            localStorage.setItem('prov_users', JSON.stringify(usuarios));
+        }
+
+        // --- ELEMENTOS DO DOM ---
+        // Topbar e Perfil
+        const topbar = document.getElementById('topbar');
+        const userAvatar = document.getElementById('userAvatar');
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const userRoleDisplay = document.getElementById('userRoleDisplay');
+        const btnLogout = document.getElementById('btnLogout');
+
+        // Sidebar
+        const sidebarLogo = document.getElementById('sidebarLogo');
+        const sidebarMenu = document.getElementById('sidebarMenu');
+        const linkUpload = document.getElementById('linkUpload');
+        const linkEstoque = document.getElementById('linkEstoque');
+        const linkSeparacao = document.getElementById('linkSeparacao');
+        const submenuSeparacao = document.getElementById('submenuSeparacao');
+        const subFilaTrabalho = document.getElementById('subFilaTrabalho');
+        const subListaSeparacao = document.getElementById('subListaSeparacao');
+        const linkConferencao = document.getElementById('linkConferencao');
+        const linkExpedicao = document.getElementById('linkExpedicao');
+
+        // Telas
+        const screenLogin = document.getElementById('screenLogin');
+        const screenRecovery = document.getElementById('screenRecovery');
+        const screenRegister = document.getElementById('screenRegister');
+        const screenMenu = document.getElementById('screenMenu');
+        const screenUpload = document.getElementById('screenUpload');
+        const screenEstoque = document.getElementById('screenEstoque');
+        const screenFilaTrabalho = document.getElementById('screenFilaTrabalho');
+        const screenListaSeparacao = document.getElementById('screenListaSeparacao');
+        const screenConferencao = document.getElementById('screenConferencao');
+        const screenExpedicao = document.getElementById('screenExpedicao');
+
+        // Formulários de Autenticação
+        const txtUsuario = document.getElementById('txtUsuario');
+        const txtSenha = document.getElementById('txtSenha');
+        const btnLogar = document.getElementById('btnLogar');
+
+        const txtRecMatricula = document.getElementById('txtRecMatricula');
+        const txtNovaSenha = document.getElementById('txtNovaSenha');
+        const btnRedefinirSenha = document.getElementById('btnRedefinirSenha');
+
+        const txtRegMatricula = document.getElementById('txtRegMatricula');
+        const txtRegNome = document.getElementById('txtRegNome');
+        const txtRegCargo = document.getElementById('txtRegCargo');
+        const txtRegSenha = document.getElementById('txtRegSenha');
+        const btnCadastrar = document.getElementById('btnCadastrar');
+
+        // Links de Transição de Autenticação
+        const linkGoRecovery = document.getElementById('linkGoRecovery');
+        const linkGoRegister = document.getElementById('linkGoRegister');
+        const linkBackLoginRec = document.getElementById('linkBackLoginRec');
+        const linkBackLoginReg = document.getElementById('linkBackLoginReg');
+
+        // Função utilitária para esconder todas as telas
+        function hideAllScreens() {
+            screenLogin.classList.add('hidden');
+            screenRecovery.classList.add('hidden');
+            screenRegister.classList.add('hidden');
+            screenMenu.classList.add('hidden');
+            screenUpload.classList.add('hidden');
+            screenEstoque.classList.add('hidden');
+            screenFilaTrabalho.classList.add('hidden');
+            screenListaSeparacao.classList.add('hidden');
+            screenConferencao.classList.add('hidden');
+            screenExpedicao.classList.add('hidden');
+        }
+
+        // --- AÇÕES DE NAVEGAÇÃO DE AUTENTICAÇÃO ---
+        linkGoRecovery.addEventListener('click', () => {
+            hideAllScreens();
+            screenRecovery.classList.remove('hidden');
+        });
+
+        linkGoRegister.addEventListener('click', () => {
+            hideAllScreens();
+            screenRegister.classList.remove('hidden');
+        });
+
+        linkBackLoginRec.addEventListener('click', () => {
+            hideAllScreens();
+            screenLogin.classList.remove('hidden');
+        });
+
+        linkBackLoginReg.addEventListener('click', () => {
+            hideAllScreens();
+            screenLogin.classList.remove('hidden');
+        });
+
+        // --- LÓGICA DE LOGIN ---
+        btnLogar.addEventListener('click', () => {
+            const matricula = txtUsuario.value.trim();
+            const senha = txtSenha.value.trim();
+
+            if (!matricula || !senha) {
+                alert('Por favor, preencha a matrícula e a senha!');
+                return;
+            }
+
+            const usuarios = obterUsuarios();
+
+            if (usuarios[matricula] && usuarios[matricula].senha === senha) {
+                const user = usuarios[matricula];
+                
+                // Preenche os dados do perfil logado
+                userNameDisplay.textContent = user.nome.toUpperCase();
+                userRoleDisplay.textContent = user.cargo.toUpperCase();
+                userAvatar.textContent = user.nome.charAt(0).toUpperCase();
+
+                hideAllScreens();
+                screenMenu.classList.remove('hidden');
+                sidebarLogo.classList.remove('hidden');
+                sidebarMenu.classList.remove('hidden');
+                topbar.classList.remove('hidden');
+
+                txtSenha.value = '';
+            } else {
+                alert('Matrícula ou senha incorretos!');
+            }
+        });
+
+        // --- LÓGICA DE CADASTRO ---
+        btnCadastrar.addEventListener('click', () => {
+            const matricula = txtRegMatricula.value.trim();
+            const nome = txtRegNome.value.trim();
+            const cargo = txtRegCargo.value.trim();
+            const senha = txtRegSenha.value.trim();
+
+            if (!matricula || !nome || !cargo || !senha) {
+                alert('Por favor, preencha todos os campos do cadastro!');
+                return;
+            }
+
+            const usuarios = obterUsuarios();
+
+            if (usuarios[matricula]) {
+                alert('Esta matrícula já está cadastrada no sistema!');
+                return;
+            }
+
+            usuarios[matricula] = {
+                nome: nome,
+                cargo: cargo,
+                senha: senha
+            };
+
+            salvarUsuarios(usuarios);
+            alert('Usuário cadastrado com sucesso! Faça login para continuar.');
+
+            // Limpa campos e volta para login
+            txtRegMatricula.value = '';
+            txtRegNome.value = '';
+            txtRegCargo.value = '';
+            txtRegSenha.value = '';
+
+            hideAllScreens();
+            screenLogin.classList.remove('hidden');
+        });
+
+        // --- LÓGICA DE RECUPERAÇÃO / REDEFINIÇÃO DE SENHA ---
+        btnRedefinirSenha.addEventListener('click', () => {
+            const matricula = txtRecMatricula.value.trim();
+            const novaSenha = txtNovaSenha.value.trim();
+
+            if (!matricula || !novaSenha) {
+                alert('Informe a matrícula e a nova senha!');
+                return;
+            }
+
+            const usuarios = obterUsuarios();
+
+            if (!usuarios[matricula]) {
+                alert('Matrícula não localizada no sistema!');
+                return;
+            }
+
+            usuarios[matricula].senha = novaSenha;
+            salvarUsuarios(usuarios);
+
+            alert('Senha redefinida com sucesso! Redirecionando para o login.');
+
+            txtRecMatricula.value = '';
+            txtNovaSenha.value = '';
+
+            hideAllScreens();
+            screenLogin.classList.remove('hidden');
+        });
+
+        // --- LOGOUT ---
+        btnLogout.addEventListener('click', () => {
+            hideAllScreens();
+            screenLogin.classList.remove('hidden');
+            sidebarLogo.classList.add('hidden');
+            sidebarMenu.classList.add('hidden');
+            topbar.classList.add('hidden');
+            submenuSeparacao.classList.add('hidden');
+            txtUsuario.value = '';
+            txtSenha.value = '';
+        });
+
+        // --- NAVEGAÇÃO DO MENU LATERAL ---
+        linkUpload.addEventListener('click', () => { hideAllScreens(); screenUpload.classList.remove('hidden'); });
+        linkEstoque.addEventListener('click', () => { hideAllScreens(); screenEstoque.classList.remove('hidden'); });
+        linkSeparacao.addEventListener('click', () => { submenuSeparacao.classList.toggle('hidden'); });
+        subFilaTrabalho.addEventListener('click', () => { hideAllScreens(); screenFilaTrabalho.classList.remove('hidden'); });
+        subListaSeparacao.addEventListener('click', () => { hideAllScreens(); screenListaSeparacao.classList.remove('hidden'); });
+        linkConferencao.addEventListener('click', () => { hideAllScreens(); screenConferencao.classList.remove('hidden'); });
+        linkExpedicao.addEventListener('click', () => { hideAllScreens(); screenExpedicao.classList.remove('hidden'); });
+        sidebarLogo.addEventListener('click', () => { hideAllScreens(); screenMenu.classList.remove('hidden'); });
+
+        // Inicializador
+        obterUsuarios();
+    </script>
+
+</body>
+</html>
